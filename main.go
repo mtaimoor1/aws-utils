@@ -22,10 +22,10 @@ func main() {
 	s3_client := getS3Con()
 	bucket := os.Getenv("bucket")
 	prefix := os.Getenv("prefix")
-	// destination_bucket := os.Getenv("destination_bucket")
-	// destination_prefix := os.Getenv("destination_prefix")
+	destination_bucket := os.Getenv("destination_bucket")
+	destination_prefix := os.Getenv("destination_prefix")
 
-	s3_utils.ListS3Objs(s3_client, bucket, prefix)
-	// s3_utils.MoveS3Obj(s3_client, bucket, prefix, destination_bucket, destination_prefix)
+	// s3_utils.ListS3Objs(s3_client, bucket, prefix)
+	s3_utils.MoveS3Obj(s3_client, bucket, prefix, destination_bucket, destination_prefix)
 
 }

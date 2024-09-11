@@ -59,6 +59,10 @@ func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket 
 			CopySource: aws.String(s_bucket + "/" + *obj.Key),
 			Key:        aws.String(d_prefix + *obj.Key),
 		})
+		s3_client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+			Bucket: aws.String(s_bucket),
+			Key:    aws.String(*obj.Key),
+		})
 	}
 	return res
 }
