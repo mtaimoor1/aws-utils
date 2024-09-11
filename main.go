@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -19,6 +21,7 @@ func getS3Con() *s3.Client {
 }
 
 func main() {
+	start := time.Now()
 	s3_client := getS3Con()
 	bucket := os.Getenv("bucket")
 	prefix := os.Getenv("prefix")
@@ -28,4 +31,5 @@ func main() {
 	// s3_utils.ListS3Objs(s3_client, bucket, prefix)
 	s3_utils.MoveS3Obj(s3_client, bucket, prefix, destination_bucket, destination_prefix)
 
+	fmt.Printf("program took %v\n", time.Since(start))
 }

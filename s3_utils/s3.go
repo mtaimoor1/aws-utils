@@ -3,11 +3,14 @@ package s3_utils
 import (
 	"context"
 	"log"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
+
+var wg sync.WaitGroup
 
 func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types.Object, error) {
 
@@ -47,22 +50,27 @@ func ListS3Objs(s3_client *s3.Client, bucket string, prefix string) {
 	}
 }
 
-func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket string, d_prefix string) []types.Object {
+func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket string, d_prefix string) {
 	res, err := getListOfS3Obj(s3_client, s_bucket, s_prefix)
 	if err != nil {
 		log.Fatal(err)
-		return nil
 	}
-	for _, obj := range res {
-		s3_client.CopyObject(context.TODO(), &s3.CopyObjectInput{
-			Bucket:     aws.String(d_bucket),
-			CopySource: aws.String(s_bucket + "/" + *obj.Key),
-			Key:        aws.String(d_prefix + *obj.Key),
-		})
-		s3_client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
-			Bucket: aws.String(s_bucket),
-			Key:    aws.String(*obj.Key),
-		})
+	for _, object := range res {
+		wg.Add(1)
+		go moveObj(s3_client, d_bucket, d_prefix, s_bucket, object)
 	}
-	return res
+	wg.Wait()
+}
+
+func moveObj(s3_client *s3.Client, d_bucket string, d_prefix string, s_bucket string, obj types.Object) {
+	defer wg.Done()
+	s3_client.CopyObject(context.TODO(), &s3.CopyObjectInput{
+		Bucket:     aws.String(d_bucket),
+		CopySource: aws.String(s_bucket + "/" + *obj.Key),
+		Key:        aws.String(d_prefix + *obj.Key),
+	})
+	s3_client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+		Bucket: aws.String(s_bucket),
+		Key:    aws.String(*obj.Key),
+	})
 }
