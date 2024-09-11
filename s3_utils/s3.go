@@ -1,31 +1,21 @@
-package s3
+package s3_utils
 
 import (
 	"context"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
-
-func getS3Con() *s3.Client {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatal(err)
-	}
-	return s3.NewFromConfig(cfg)
-}
 
 func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types.Object, error) {
 
 	result := []types.Object{}
 
 	list_payload := &s3.ListObjectsV2Input{
-		Bucket:  aws.String(bucket),
-		Prefix:  aws.String(prefix),
-		MaxKeys: aws.Int32(2),
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(prefix),
 	}
 	for {
 		output, err := s3_client.ListObjectsV2(context.TODO(), list_payload)
@@ -45,9 +35,7 @@ func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types
 	return result, nil
 }
 
-func ListS3Objs(bucket string, prefix string) {
-
-	s3_client := getS3Con()
+func ListS3Objs(s3_client *s3.Client, bucket string, prefix string) {
 
 	results, err := getListOfS3Obj(s3_client, bucket, prefix)
 	if err != nil {
@@ -59,8 +47,7 @@ func ListS3Objs(bucket string, prefix string) {
 	}
 }
 
-func MoveS3Obj(s_bucket string, s_prefix string, d_bucket string, d_prefix string) []types.Object {
-	s3_client := getS3Con()
+func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket string, d_prefix string) []types.Object {
 	res, err := getListOfS3Obj(s3_client, s_bucket, s_prefix)
 	if err != nil {
 		log.Fatal(err)
