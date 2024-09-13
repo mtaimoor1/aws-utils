@@ -10,8 +10,10 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
+// Wait group for concurrent requests
 var wg sync.WaitGroup
 
+// Function to get the list of s3 objects at a certain perfix
 func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types.Object, error) {
 
 	result := []types.Object{}
@@ -38,6 +40,7 @@ func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types
 	return result, nil
 }
 
+// Displays the key name, size and modification date from the list of object
 func ListS3Objs(s3_client *s3.Client, bucket string, prefix string) {
 
 	results, err := getListOfS3Obj(s3_client, bucket, prefix)
@@ -50,6 +53,8 @@ func ListS3Objs(s3_client *s3.Client, bucket string, prefix string) {
 	}
 }
 
+// Moves all the objects inside a prefix to a certain destination prefix.
+// WARNING: This function will DELETE the data from the orignal location
 func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket string, d_prefix string) {
 	res, err := getListOfS3Obj(s3_client, s_bucket, s_prefix)
 	if err != nil {
@@ -62,6 +67,8 @@ func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket 
 	wg.Wait()
 }
 
+// Function to make the API calls to move the object
+// Wrote this function separately for encapsulation and to run in goroutine
 func moveObj(s3_client *s3.Client, d_bucket string, d_prefix string, s_bucket string, obj types.Object) {
 	defer wg.Done()
 	s3_client.CopyObject(context.TODO(), &s3.CopyObjectInput{
