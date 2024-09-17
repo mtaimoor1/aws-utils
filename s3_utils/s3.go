@@ -13,31 +13,9 @@ import (
 // Wait group for concurrent requests
 var wg sync.WaitGroup
 
-// Function to get the list of s3 objects at a certain perfix
-func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types.Object, error) {
+// Rename files in s3
+func RenameS3Obj(s3_client *s3.Client, bucket string, prefix string) {
 
-	result := []types.Object{}
-
-	list_payload := &s3.ListObjectsV2Input{
-		Bucket: aws.String(bucket),
-		Prefix: aws.String(prefix),
-	}
-	for {
-		output, err := s3_client.ListObjectsV2(context.TODO(), list_payload)
-		if err != nil {
-			log.Fatal(err)
-			return nil, err
-		}
-
-		result = append(result, output.Contents...)
-
-		if *output.IsTruncated == true {
-			list_payload.ContinuationToken = output.NextContinuationToken
-		} else {
-			break
-		}
-	}
-	return result, nil
 }
 
 // Displays the key name, size and modification date from the list of object
@@ -80,4 +58,31 @@ func moveObj(s3_client *s3.Client, d_bucket string, d_prefix string, s_bucket st
 		Bucket: aws.String(s_bucket),
 		Key:    aws.String(*obj.Key),
 	})
+}
+
+// Function to get the list of s3 objects at a certain perfix
+func getListOfS3Obj(s3_client *s3.Client, bucket string, prefix string) ([]types.Object, error) {
+
+	result := []types.Object{}
+
+	list_payload := &s3.ListObjectsV2Input{
+		Bucket: aws.String(bucket),
+		Prefix: aws.String(prefix),
+	}
+	for {
+		output, err := s3_client.ListObjectsV2(context.TODO(), list_payload)
+		if err != nil {
+			log.Fatal(err)
+			return nil, err
+		}
+
+		result = append(result, output.Contents...)
+
+		if *output.IsTruncated == true {
+			list_payload.ContinuationToken = output.NextContinuationToken
+		} else {
+			break
+		}
+	}
+	return result, nil
 }
