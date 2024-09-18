@@ -14,7 +14,18 @@ import (
 var wg sync.WaitGroup
 
 // Rename files in s3
-func RenameS3Obj(s3_client *s3.Client, bucket string, prefix string) {
+func RenameS3Obj(s3_client *s3.Client, bucket string, prefix string, new_name string) {
+
+	s3_client.CopyObject(context.TODO(), &s3.CopyObjectInput{
+		Bucket:     aws.String(bucket),
+		CopySource: aws.String(bucket + "/" + prefix),
+		Key:        aws.String(new_name),
+	})
+
+	s3_client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(prefix),
+	})
 
 }
 
