@@ -17,8 +17,8 @@ var wg sync.WaitGroup
 func RenameS3Obj(s3_client *s3.Client, bucket string, prefix string, new_name string) {
 
 	s3_client.CopyObject(context.TODO(), &s3.CopyObjectInput{
-		Bucket:     aws.String(bucket),
 		CopySource: aws.String(bucket + "/" + prefix),
+		Bucket:     aws.String(bucket),
 		Key:        aws.String(new_name),
 	})
 
@@ -61,8 +61,8 @@ func MoveS3Obj(s3_client *s3.Client, s_bucket string, s_prefix string, d_bucket 
 func moveObj(s3_client *s3.Client, d_bucket string, d_prefix string, s_bucket string, obj types.Object) {
 	defer wg.Done()
 	s3_client.CopyObject(context.TODO(), &s3.CopyObjectInput{
-		Bucket:     aws.String(d_bucket),
 		CopySource: aws.String(s_bucket + "/" + *obj.Key),
+		Bucket:     aws.String(d_bucket),
 		Key:        aws.String(d_prefix + *obj.Key),
 	})
 	s3_client.DeleteObject(context.TODO(), &s3.DeleteObjectInput{
